@@ -26,20 +26,31 @@ class Form(QWidget):
         scegliFileLayout.addWidget(scegliButton)
         scegliFileLayout.addWidget(self.tField)
         self.listaVersi = QComboBox()
+        self.listaVersi.addItem("--Scegli verso--")
+        self.listaVersi.insertSeparator(1)
         self.listaVersi.addItem("Esametro")
         self.listaVersi.addItem("Pentametro")
+        self.listaVersi.insertSeparator(4)
+        self.listaVersi.addItem("Endecasillabo falecio")
+        self.listaVersi.addItem("Trimetro giambico scazonte")
         self.listaVersi.addItem("Asclepiadeo maggiore")
         self.listaVersi.addItem("Asclepiadeo minore")        
-        self.listaVersi.addItem("Endecasillabo falecio")
         self.listaVersi.addItem("Endecasillabo saffico")
-        self.listaVersi.addItem("Trimetro giambico scazonte")
+        self.listaVersi.addItem("Adonio")
         self.listaVersi.addItem("Gliconeo")
         self.listaVersi.addItem("Ferecrateo")
+        self.listaVersi.insertSeparator(13)
         self.listaVersi.addItem("Enneasillabo alcaico")
         self.listaVersi.addItem("Decasillabo alcaico")
         self.listaVersi.addItem("Endecasillabo alcaico")
-        self.listaVersi.addItem("Adonio")
-        
+        self.listaVersi.insertSeparator(17)
+        self.listaVersi.addItem("Distico elegiaco")
+        self.listaVersi.addItem("Strofe saffica")
+        self.listaVersi.addItem("Strofe alcaica")
+        self.listaVersi.addItem("Strofe di gliconei e ferecratei I")
+        self.listaVersi.addItem("Strofe di gliconei e ferecratei II")
+        self.listaVersi.addItem("Prima strofe asclepiadea")
+        self.listaVersi.addItem("Seconda strofe asclepiadea")
         mainLayout = QFormLayout()
         mainLayout.addRow(QLabel("Verso/strofa"), self.listaVersi)
         mainLayout.addRow(QLabel("Scegli file"), scegliFileLayout)
@@ -118,9 +129,13 @@ class Form(QWidget):
             self.mostraErrore("Nessuna sorgente valida selezionata. \n Scegliere una sorgente valida.")
             return
         scriviFuturo = []
+        count = 0
         for versoOriginale in self.versiDaFare:
             if self.listaVersi.currentText() == "Esametro":
                 verso = Esametro(versoOriginale)
+            if self.listaVersi.currentText() == "--Scegli verso--":
+                self.mostraErrore("Scegli un tipo di verso prima di continuare")
+                return
             if self.listaVersi.currentText() == "Pentametro":
                 verso = Pentametro(versoOriginale)
             if self.listaVersi.currentText() == "Endecasillabo saffico":
@@ -145,6 +160,64 @@ class Form(QWidget):
                 verso = AsclepiadeoMinore(versoOriginale)
             if self.listaVersi.currentText() == "Asclepiadeo maggiore":
                 verso = AsclepiadeoMaggiore(versoOriginale)
+            if self.listaVersi.currentText() == "Distico elegiaco":
+                if count % 2 == 0:
+                    verso = Esametro(versoOriginale)
+                    count +=1
+                else:
+                    verso = Pentametro(versoOriginale)
+                    count += 1
+                    
+            if self.listaVersi.currentText() == "Strofe saffica":
+                if count % 4 != 3:
+                    verso = EndecasillaboSaffico(versoOriginale)
+                    count +=1
+                else:
+                    verso = Adonio(versoOriginale)
+                    count += 1
+            if self.listaVersi.currentText() == "Strofe di gliconei e ferecratei I":
+                if count % 4 != 3:
+                    verso = Gliconeo(versoOriginale)
+                    count +=1
+                else:
+                    verso = Ferecrateo(versoOriginale)
+                    count += 1
+            if self.listaVersi.currentText() == "Strofe di gliconei e ferecratei II":
+                if count % 5 != 4:
+                    verso = Gliconeo(versoOriginale)
+                    count +=1
+                else:
+                    verso = Ferecrateo(versoOriginale)
+                    count += 1
+
+            if self.listaVersi.currentText() == "Strofe alcaica":
+                if count % 4 == 0 or count % 4 == 1:
+                    verso = EndecasillaboAlcaico(versoOriginale)
+                    count +=1
+                elif count % 4 ==2:
+                    verso = EnneasillaboAlcaico(versoOriginale)
+                    count+=1
+                else:
+                    verso = DecasillaboAlcaico(versoOriginale)
+                    count += 1
+                    
+            if self.listaVersi.currentText() == "Prima strofe asclepiadea":
+                if count % 4 != 3:
+                    verso = AsclepiadeoMinore(versoOriginale)
+                    count +=1
+                else:
+                    verso = Gliconeo(versoOriginale)
+                    count+=1
+            if self.listaVersi.currentText() == "Seconda stofe asclepiadea":
+                if count % 4 == 0 or count % 4 == 1:
+                    verso = AsclepiadeoMinore(versoOriginale)
+                    count +=1
+                elif count % 4 ==2:
+                    verso = Ferecrateo(versoOriginale)
+                    count+=1
+                else:
+                    verso = Gliconeo(versoOriginale)
+                    count += 1
             try:
                 verso.dividiInSillabe()
                 soluzioni = verso.risolvi()
