@@ -11,8 +11,11 @@ class Form(QWidget):
         self.versiDaFare = "" 
         self.sorgente = os.getcwd()+"/input.txt"
         self.scrivi = QTextEdit()
+        self.scrivi.setFixedHeight(250)
         self.risultato = QTextEdit()
+        self.risultato.setFixedHeight(250)
         self.setMinimumWidth(600)
+        
         scegliFileLayout = QHBoxLayout()
         scegliButton = QPushButton("Apri..")
         scegliButton.clicked.connect(self.scegliFile)
@@ -41,7 +44,17 @@ class Form(QWidget):
         mainLayout.addRow(QLabel("Verso/strofa"), self.listaVersi)
         mainLayout.addRow(QLabel("Scegli file"), scegliFileLayout)
         mainLayout.addRow(None, QLabel("oppure"))
-        mainLayout.addRow(QLabel("Scrivi testo"), self.scrivi)
+        cleanLayout = QVBoxLayout()
+        btnClear = QPushButton("Pulisci")
+        btnClear.clicked.connect(self.pulisciTesto)
+        cleanLayout.addWidget(QLabel("Scrivi testo"))
+        cleanLayout.addStretch(1)
+        cleanLayout.addWidget(btnClear)
+        cleanLayout.setAlignment(Qt.AlignTop)
+        layoutTemp = QHBoxLayout()
+        layoutTemp.addLayout(cleanLayout)
+        layoutTemp.addWidget(self.scrivi)
+        mainLayout.addRow(layoutTemp)
         mainLayout.addRow(None, btnRisolvi)
         mainLayout.addRow(QLabel("Risultato"), self.risultato)
         self.setLayout(mainLayout)
@@ -50,6 +63,8 @@ class Form(QWidget):
     def cambiaPercorso(self):
         self.sorgente = self.tField.text().replace("...", os.getcwd())
 
+    def pulisciTesto(self):
+        self.scrivi.setText("")
 
     def mostraErrore(self, testo, tipo = 0):
         msg = QMessageBox()
