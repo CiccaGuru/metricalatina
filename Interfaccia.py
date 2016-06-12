@@ -54,11 +54,33 @@ class Form(QWidget):
         layoutTemp = QHBoxLayout()
         layoutTemp.addLayout(cleanLayout)
         layoutTemp.addWidget(self.scrivi)
+        salvaLayout = QVBoxLayout()
+        btnSalva = QPushButton("Salva")
+        btnSalva.clicked.connect(self.salvaRisultato)
+        layoutTempSalva = QHBoxLayout()
+        salvaLayout.addWidget(QLabel("Risultato"))
+        salvaLayout.addStretch(1)
+        salvaLayout.addWidget(btnSalva)
+        salvaLayout.setAlignment(Qt.AlignTop)
+        layoutTempSalva.addLayout(salvaLayout)
+        layoutTempSalva.addWidget(self.risultato)
         mainLayout.addRow(layoutTemp)
         mainLayout.addRow(None, btnRisolvi)
-        mainLayout.addRow(QLabel("Risultato"), self.risultato)
+        mainLayout.addRow(layoutTempSalva)
         self.setLayout(mainLayout)
         self.setWindowTitle("Metrica Latina")
+
+    def salvaRisultato(self):
+        try:
+            fname = QFileDialog.getSaveFileName(self, 'Salva file', "output.txt", "File di testo (*.txt)")
+            out_file = open(fname[0],"w")
+            daScrivere = self.risultato.toPlainText().replace("<font color='red'", "").replace("<font color='blue'>", "").replace("</font>","")
+            out_file.write(daScrivere)
+            out_file.close()
+        except Exception:
+            self.mostraErrore("Si è verificato un errore!")
+        else:
+            self.mostraErrore("Salvataggio avvenuto con successo!", 2, "Info")
         
     def cambiaPercorso(self):
         self.sorgente = self.tField.text().replace("...", os.getcwd())
@@ -66,14 +88,16 @@ class Form(QWidget):
     def pulisciTesto(self):
         self.scrivi.setText("")
 
-    def mostraErrore(self, testo, tipo = 0):
+    def mostraErrore(self, testo, tipo = 0, titolo = "Errore!"):
         msg = QMessageBox()
         if tipo == 0:
             msg.setIcon(QMessageBox.Warning)
         elif tipo == 1:
             msg.setIcon(QMessageBox.Critical)
+        elif tipo == 2:
+            msg.setIcon(QMessageBox.Information)
         msg.setText(testo)
-        msg.setWindowTitle("Errore!")
+        msg.setWindowTitle(titolo)
         msg.setStandardButtons(QMessageBox.Ok)
         msg.buttonClicked.connect(msg.close)
         msg.exec_()
@@ -151,17 +175,9 @@ class Form(QWidget):
         #self.risultato.setPlainText("\n".join(scriviFuturo))
         
     def scegliFile(self):
-        fname = QFileDialog.getOpenFileName(self, 'Open file', "input.txt", "Text files (*.txt)")
+        fname = QFileDialog.getOpenFileName(self, 'Apri file', "input.txt", "File di testo (*.txt)")
         self.tField.setText(fname[0].replace(os.getcwd(), "..."))
         self.sorgente = fname[0]
-        
-    def submitContact(self):
-        name = self.nameLine.text()
-        if name == "":
-            QMessageBox.information(self, "Empty Field","Please enter a name and address.")
-            return
-        else:
-            QMessageBox.information(self, "Success!","Hello %s!" % name)
 
 if __name__ == '__main__':
     import sys
