@@ -9,7 +9,7 @@ class Form(QWidget):
         super(Form, self).__init__(parent)
         self.sorgente = ""
         self.versiDaFare = "" 
-        self.sorgente = os.getcwd()+"/input.txt"
+        self.sorgente = ""
         self.scrivi = QTextEdit()
         self.scrivi.setFixedHeight(250)
         self.risultato = QTextEdit()
@@ -19,13 +19,17 @@ class Form(QWidget):
         scegliFileLayout = QHBoxLayout()
         scegliButton = QPushButton("Apri..")
         scegliButton.clicked.connect(self.scegliFile)
-        self.tField = QLineEdit(".../input.txt")
+        self.tField = QLineEdit()
+        self.tField.setDisabled(1)
         self.tField.textChanged.connect(self.cambiaPercorso)
         btnRisolvi = QPushButton("RISOLVI")
         btnRisolvi.clicked.connect(self.iniziaRisoluzione)
         scegliFileLayout.addWidget(scegliButton)
         scegliFileLayout.addWidget(self.tField)
         self.listaVersi = QComboBox()
+        self.listaVersi.setEditable( True )
+        self.listaVersi.completer().setCompletionMode(QCompleter.PopupCompletion)
+        self.listaVersi.completer().popup().setStyleSheet("margin: 5px")
         self.listaVersi.addItem("--Scegli verso--")
         self.listaVersi.insertSeparator(1)
         self.listaVersi.addItem("Esametro")
@@ -115,16 +119,9 @@ class Form(QWidget):
 
 
     def iniziaRisoluzione(self):
+        self.risultato.setPlainText("")
         if self.scrivi.toPlainText() != "":
             self.versiDaFare = self.scrivi.toPlainText().split("\n")
-        elif self.sorgente != "":
-            if(os.path.isfile(self.sorgente)):
-                file = open(self.sorgente)
-                self.versiDaFare = [x.strip() for x in file.readlines()]
-                self.scrivi.setPlainText("\n".join(self.versiDaFare))
-            else:
-                self.mostraErrore("Il file selezionato non esiste! \n Scegliere un file esistente.")
-                return
         else:
             self.mostraErrore("Nessuna sorgente valida selezionata. \n Scegliere una sorgente valida.")
             return
@@ -249,8 +246,23 @@ class Form(QWidget):
         
     def scegliFile(self):
         fname = QFileDialog.getOpenFileName(self, 'Apri file', "input.txt", "File di testo (*.txt)")
+        self.tField.setDisabled(0)
         self.tField.setText(fname[0].replace(os.getcwd(), "..."))
         self.sorgente = fname[0]
+        if(os.path.isfile(self.sorgente)):
+            file = open(self.sorgente)
+            self.versiDaFare = [x.strip() for x in file.readlines()]
+            if self.versiDaFare[0][0]=="#":
+                index = self.listaVersi.findText(self.versiDaFare[0][1:])
+                if index == -1:
+                    self.mostraErrore("Il tipo di verso specificato nel file non esiste. Controllare che sia scritto correttamente")
+                    return
+                self.listaVersi.setCurrentIndex(index)
+                self.versiDaFare = self.versiDaFare[1:]
+            self.scrivi.setPlainText("\n".join(self.versiDaFare))
+        else:
+            self.mostraErrore("Il file selezionato non esiste! \n Scegliere un file esistente.")
+            return
 
 if __name__ == '__main__':
     import sys
