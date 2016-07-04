@@ -240,7 +240,7 @@ class Form(QWidget):
                 if len(soluzioni) == 1:
                     self.risultato.append(soluzioni[0])
                 else:
-                    [self.risultato.append("\t"+str(x)) for x in soluzioni]
+                    [self.risultato.append("...."+str(x)) for x in soluzioni]
                 
         #self.risultato.setPlainText("\n".join(scriviFuturo))
         

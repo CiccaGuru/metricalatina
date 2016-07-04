@@ -26,15 +26,13 @@ class VersoIncompatibile(Exception):
 class Verso:
     vocali = "aeiouyAEIOUY"
     consonanti = "bcdfghjklmnpqrstvxzBCDFGHJKLMNPQRSTVXZ"
-    desinenzePrima = ["a","ae","am","arum","is","as"]
     mute = "bpcgdtfBPCGTD"
     liquide = "rlRL"
     desinenzeSeconda = ["us", "i", "um", "o", "e","orum","is","os"]
     dittonghi = ["ae", "au", "oe", "eu"]
     dittongoEi = ["hei","dein","deinde","proin","proinde"]
     dittongoUi = ["hui","cui","huic"]
-    neuterDecl = ["neuter", "neutri","neutro","neutrum", "neutre","neutrae","neutra","neutrorum","neutris","neutras","neutros","neutrarum"]
-
+   
     def __init__(self, verso):
         self.versoOriginale = verso.strip()
         self.verso = ""
@@ -73,15 +71,19 @@ class Verso:
         verso = re.sub("[^a-zA-Z ]", "", verso)
         
         self.dove_h = [m.start() for m in re.finditer('h', verso)]
+        self.dove_h = [self.dove_h[x] - x for x in range(0, len(self.dove_h))]
         verso = re.sub("h", "", verso)
-
+        
         self.dove_m = [m.start() for m in re.finditer("m ["+self.vocali+"]", verso)]
+        self.dove_m = [self.dove_m[x] - x for x in range(0, len(self.dove_m))]
         verso = re.sub("m ["+self.vocali+"]", lambda x:x.group(0).replace('m',''), verso)
 
         self.dove_x = [m.start() for m in re.finditer('x', verso)]
+        self.dove_x = [self.dove_x[x] + x for x in range(0, len(self.dove_x))]
         verso = re.sub("x", "cs", verso)
 
         self.dove_j = [m.start() + 2 for m in re.finditer("[^u]["+self.vocali+" ][iI]["+self.vocali+"]", verso)]
+        self.dove_j = [self.dove_j[x] - x for x in range(0, len(self.dove_j))]
         verso = re.sub("[^u]["+self.vocali+" ][iI]["+self.vocali+"]", lambda x:x.group(0).replace('i','j').replace('I', "J"), verso)
 
         ##self.dove_j.extend([m.start() + 2 for m in re.finditer("[^u]["+self.vocali+"n]i["+self.vocali+"]", verso)])
@@ -228,7 +230,9 @@ class Verso:
 
         i = 0
         unito_h = ""
+        print(self.dove_h)
         while i < len(unito_m):
+            print(unito_h + "\t" + str(i))
             if i in self.dove_h:
               unito_h += "h"
             unito_h += unito_m[i]
@@ -338,11 +342,14 @@ class Pentametro(Verso):
 
     def dividiInSillabe(self):
         super().dividiInSillabe()
-        if len(self.sillabe)<12:
+        print(self.sillabe)
+        print(len(self.sillabe))
+        if len(self.sillabe)<11:
             raise VersoIncompatibile("Verso non compatibile!")
 
     def risolvi(self):
         self.versoSillabato = [x for x in self.versoSillabato if x != ""]
+        print(self.versoSillabato)
         self.quantita = [-1 for x in range(0, len(self.versoSillabato))]
         self.poniLunghezze()
         self.soluzioni = list(set(map(tuple, self.soluzioni)))
